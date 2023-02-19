@@ -10,7 +10,7 @@ resource "aws_ecs_task_definition" "prod_ecs_task_definition" {
 }
 
 resource "aws_iam_role" "prod_ecs_task_execution_role" {
-  name = prod-ecsTaskExecutionRole
+  name = "prod-ecsTaskExecutionRole"
 
   assume_role_policy = <<EOF
 {

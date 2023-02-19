@@ -58,8 +58,14 @@ module "aws_security_group" {
   for_each      = var.vpc_sg_profile
   vpc_id        = module.aws_vpc[each.value.vpc_name].vpc_id
   vpc_sg_name   = each.value.vpc_sg_name
+  description   = each.value.description
   ingress_rules = each.value.ingress_rules
-  vpc_sg_tags   = each.value.vpc_sg_tags
+  vpc_sg_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-alb-sg"
+    }
+  )
 }
 
 module "aws_security_group_ecs_task" {
@@ -67,6 +73,7 @@ module "aws_security_group_ecs_task" {
   for_each    = var.vpc_sg_ecs_task_profile
   vpc_id      = module.aws_vpc[each.value.vpc_name].vpc_id
   vpc_sg_name = each.value.vpc_sg_name
+  description = each.value.description
   ingress_rules = {
     allow_http_from_ecs_alb = {
       description      = "Allow HTTP From ECS ALB"
@@ -84,14 +91,24 @@ module "aws_security_group_ecs_task" {
       security_groups = ["${module.aws_security_group[each.value.alb_sg_name].vpc_sg_id}"]
     }
   }
-  vpc_sg_tags = each.value.vpc_sg_tags
+  vpc_sg_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-task-sg"
+    }
+  )
 }
 
 module "aws_ecs_cluster" {
   source                   = "./modules/aws_ecs_cluster"
   for_each                 = var.ecs_cluster_profile
   ecs_fargate_cluster_name = each.value.ecs_fargate_cluster_name
-  ecs_fargate_cluster_tags = each.value.ecs_fargate_cluster_tags
+  ecs_fargate_cluster_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-fargate-cluster"
+    }
+  )
 }
 
 module "aws_ecs_task_definition" {
@@ -100,11 +117,60 @@ module "aws_ecs_task_definition" {
   ecs_task_definition_family                   = each.value.ecs_task_definition_family
   ecs_task_definition_requires_compatibilities = each.value.ecs_task_definition_requires_compatibilities
   ecs_task_definition_network_mode             = each.value.ecs_task_definition_network_mode
-  ecs_task_definition_execution_role_arn       = each.value.ecs_task_definition_execution_role_arn
+  ecs_task_definition_execution_role_arn       = "arn:aws:iam::${local.aws_account_id}:role/ecsTaskExecutionRole"
   ecs_task_definition_memory                   = each.value.ecs_task_definition_memory
   ecs_task_definition_cpu                      = each.value.ecs_task_definition_cpu
-  ecs_task_definition_container_definitions    = each.value.ecs_task_definition_container_definitions
-  ecs_task_definition_tags                     = each.value.ecs_task_definition_tags
+  ecs_task_definition_container_definitions = jsonencode([
+    {
+      name      = "prestashop"
+      image     = "prestashop/prestashop"
+      cpu       = 1024
+      memory    = 2048
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+      environment = [
+        {
+          "name" : "DB_USER",
+          "value" : "var.db_user"
+        },
+        {
+          "name" : "DB_SERVER",
+          "value" : "var.db_host"
+        },
+        {
+          "name" : "DB_PASSWD",
+          "value" : "var.db_password"
+        },
+        {
+          "name" : "PS_DOMAIN",
+          "value" : "var.domain"
+        },
+        {
+          "name" : "PS_FOLDER_ADMIN",
+          "value" : "var.admin_folder"
+        },
+        {
+          "name" : "ADMIN_MAIL",
+          "value" : "var.admin_email"
+        },
+        {
+          "name" : "ADMIN_PASSWD",
+          "value" : "var.admin_passwd"
+        }
+      ]
+    }
+  ])
+  ecs_task_definition_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-task-definition"
+    }
+  )
 }
 
 module "aws_lb" {
@@ -116,7 +182,12 @@ module "aws_lb" {
   security_groups            = ["${module.aws_security_group[each.value.alb_sg_name].vpc_sg_id}"]
   subnets                    = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   enable_deletion_protection = each.value.enable_deletion_protection
-  lb_tags                    = each.value.lb_tags
+  lb_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-alb"
+    }
+  )
 }
 
 module "aws_alb_target_group" {
@@ -128,7 +199,12 @@ module "aws_alb_target_group" {
   vpc_id                = module.aws_vpc[each.value.vpc_name].vpc_id
   target_type           = each.value.target_type
   health_check_points   = each.value.health_check_points
-  alb_taget_group_tags  = each.value.alb_taget_group_tags
+  alb_taget_group_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-alb-target-group"
+    }
+  )
 }
 
 module "aws_alb_listener" {
@@ -139,7 +215,12 @@ module "aws_alb_listener" {
   protocol          = each.value.protocol
   target_group_arn  = module.aws_alb_target_group[each.value.alb_target_group_name].lb_target_group_arn
   type              = each.value.type
-  alb_listener_tags = each.value.alb_listener_tags
+  alb_listener_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-alb-listener"
+    }
+  )
 }
 
 module "aws_ecs_service" {
@@ -147,7 +228,7 @@ module "aws_ecs_service" {
   for_each               = var.ecs_service
   ecs_fargate_cluster_id = module.aws_ecs_cluster[each.value.ecs_cluster_name].prod_ecs_fargate_cluster_id
   task_definition_arn    = module.aws_ecs_task_definition[each.value.ecs_task_definition_name].prod_ecs_task_definition_arn
-  security_groups        = ["${module.aws_security_group[each.value.ecs_security_groups].vpc_sg_id}"]
+  security_groups        = ["${module.aws_security_group[each.value.ecs_security_group].vpc_sg_id}"]
   subnets                = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   target_group_arn       = module.aws_alb_target_group[each.value.target_group_name].lb_target_group_arn
 

@@ -187,6 +187,7 @@ vpc_sg_profile = {
   prod-ecs-alb-vpc-sg = {
     vpc_name    = "prod-vpc01"
     vpc_sg_name = "prod_eshop_ecs_alb_sg"
+    description = "Allow HTTP & HTTPS"
     ingress_rules = {
       allow_http_from_anywhere = {
         description      = "Allow HTTP"
@@ -205,12 +206,6 @@ vpc_sg_profile = {
         ipv6_cidr_blocks = ["::/0"]
       }
     }
-    vpc_sg_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-alb-sg"
-      }
-    )
   }
 }
 
@@ -219,12 +214,7 @@ vpc_sg_ecs_task_profile = {
     alb_sg_name = "prod-ecs-alb-vpc-sg"
     vpc_name    = "prod-vpc01"
     vpc_sg_name = "prod_ecs_task_sg"
-    vpc_sg_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-task-sg"
-      }
-    )
+    description = "Allow HTTP From ALB SG"
 
   }
 }
@@ -233,12 +223,6 @@ vpc_sg_ecs_task_profile = {
 ecs_cluster_profile = {
   prod-ecs-cluster-01 = {
     ecs_fargate_cluster_name = "prod_eshop_ecs_fargate_cluster"
-    ecs_fargate_cluster_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-fargate-cluster"
-      }
-    )
   }
 }
 
@@ -247,48 +231,9 @@ ecs_task_definition_profile = {
     ecs_task_definition_family                   = "prod_eshop_ecs_task"
     ecs_task_definition_requires_compatibilities = ["FARGATE"]
     ecs_task_definition_network_mode             = "awsvpc"
-    ecs_task_definition_execution_role_arn       = "arn:aws:iam::${local.aws_account_id}:role/ecsTaskExecutionRole"
+    # ecs_task_definition_execution_role_arn       = "arn:aws:iam::${local.aws_account_id}:role/ecsTaskExecutionRole"
     ecs_task_definition_memory                   = 4096
     ecs_task_definition_cpu                      = 2048
-    ecs_task_definition_container_definitions = jsonencode([
-      {
-        name      = "prestashop"
-        image     = "prestashop/prestashop"
-        cpu       = 1024
-        memory    = 2048
-        essential = true
-        portMappings = [
-          {
-            containerPort = local.service_port
-            hostPort      = local.service_port
-          }
-        ]
-        environment = [
-          {
-            "name" : "WORDPRESS_DB_USER",
-            "value" : var.wp_db_user
-          },
-          {
-            "name" : "WORDPRESS_DB_HOST",
-            "value" : var.wp_db_host
-          },
-          {
-            "name" : "WORDPRESS_DB_PASSWORD",
-            "value" : var.wp_db_password
-          },
-          {
-            "name" : "WORDPRESS_DB_NAME",
-            "value" : var.wp_db_name
-          }
-        ]
-      }
-    ])
-    ecs_task_definition_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-task-definition"
-      }
-    )
   }
 }
 
@@ -300,12 +245,6 @@ ecs_alb_profile = {
     internal                   = false
     load_balancer_type         = "application"
     enable_deletion_protection = true
-    lb_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-alb"
-      }
-    )
   }
 }
 
@@ -313,7 +252,7 @@ ecs_alb_target_group = {
   prod-ecs-alb-target-group = {
     vpc_name = "prod-vpc01"
 
-    alb_target_group_name = "prod_ecs_alb_target_group"
+    alb_target_group_name = "prod-ecs-alb-target-group"
     port                  = 80
     protocol              = "HTTP"
     target_type           = "ip"
@@ -327,12 +266,6 @@ ecs_alb_target_group = {
         unhealthy_threshold = "2"
       }
     }
-    alb_taget_group_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-alb-target-group"
-      }
-    )
   }
 }
 
@@ -344,12 +277,6 @@ ecs_alb_listener = {
     port     = 80
     protocol = "HTTP"
     type     = "forward"
-    alb_listener_tags = merge(
-      local.common_tags,
-      {
-        Name = "prod-ecs-alb-listener"
-      }
-    )
   }
 }
 
@@ -357,7 +284,7 @@ ecs_service = {
   prod-ecs-service = {
     ecs_cluster_name         = "prod-ecs-cluster-01"
     ecs_task_definition_name = "prod-ecs-task-definition"
-    ecs_security_groups      = ["prod-ecs-task-vpc-sg"]
+    ecs_security_group      = "prod-ecs-task-vpc-sg"
     subnets                  = ["private-us-east-1a", "private-us-east-1b"]
     target_group_name        = "prod-ecs-alb-target-group"
 
