@@ -252,11 +252,11 @@ ecs_task_definition_profile = {
     ecs_task_definition_network_mode             = "awsvpc"
     ecs_task_definition_memory                   = 4096
     ecs_task_definition_cpu                      = 2048
-    ecs_task_definition_volume_name = "prod_efs"
-    efs_name = "prod-nfs-efs-storage"
-    transit_encryption = "DISABLED"
-    root_directory = "/prod/"
-    iam_auth = "DISABLED"
+    ecs_task_definition_volume_name              = "prod_efs"
+    efs_name                                     = "prod-nfs-efs-storage"
+    transit_encryption                           = "DISABLED"
+    root_directory                               = "/prod/"
+    iam_auth                                     = "DISABLED"
   }
 }
 

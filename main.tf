@@ -185,18 +185,18 @@ module "aws_ecs_task_definition" {
       ]
       mountPoints = [
         {
-          "readOnly": null,
-          "containerPath": "/var/www/html/",
-          "sourceVolume": "${each.value.ecs_task_definition_volume_name}"
+          "readOnly" : null,
+          "containerPath" : "/var/www/html/",
+          "sourceVolume" : "${each.value.ecs_task_definition_volume_name}"
         }
       ]
     }
   ])
   ecs_task_definition_volume_name = each.value.ecs_task_definition_volume_name
-  file_system_id = module.aws_efs[each.value.efs_name].efs_id
-  transit_encryption = each.value.transit_encryption
-  root_directory = each.value.root_directory
-  iam_auth = each.value.iam_auth
+  file_system_id                  = module.aws_efs[each.value.efs_name].efs_id
+  transit_encryption              = each.value.transit_encryption
+  root_directory                  = each.value.root_directory
+  iam_auth                        = each.value.iam_auth
   ecs_task_definition_tags = merge(
     local.common_tags,
     {

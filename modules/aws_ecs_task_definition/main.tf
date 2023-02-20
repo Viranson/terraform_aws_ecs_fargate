@@ -10,11 +10,11 @@ resource "aws_ecs_task_definition" "prod_ecs_task_definition" {
   volume {
     name = var.ecs_task_definition_volume_name
     efs_volume_configuration {
-      file_system_id          = var.efs_id
-      transit_encryption      = var.transit_encryption
-      root_directory          = var.root_directory #"/"
+      file_system_id     = var.efs_id
+      transit_encryption = var.transit_encryption
+      root_directory     = var.root_directory #"/"
       authorization_config {
-        iam             = var.iam_auth #"DISABLED"
+        iam = var.iam_auth #"DISABLED"
       }
     }
   }
