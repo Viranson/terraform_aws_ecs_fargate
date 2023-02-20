@@ -1,4 +1,4 @@
-variable "load_balancer_id" {
+variable "load_balancer_arn" {
   type        = string
   description = "ARN of the load balancer"
 }

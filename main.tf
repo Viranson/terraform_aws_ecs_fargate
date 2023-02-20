@@ -60,6 +60,7 @@ module "aws_security_group" {
   vpc_sg_name   = each.value.vpc_sg_name
   description   = each.value.description
   ingress_rules = each.value.ingress_rules
+  egress_rules  = each.value.egress_rules
   vpc_sg_tags = merge(
     local.common_tags,
     {
@@ -75,7 +76,7 @@ module "aws_security_group_ecs_task" {
   vpc_sg_name = each.value.vpc_sg_name
   description = each.value.description
   ingress_rules = {
-    allow_http_from_ecs_alb = {
+    allow_http_from_anywhere = {
       description      = "Allow HTTP From ECS ALB"
       from_port        = 80
       to_port          = 80
@@ -89,6 +90,16 @@ module "aws_security_group_ecs_task" {
       to_port         = 0
       protocol        = "-1"
       security_groups = ["${module.aws_security_group[each.value.alb_sg_name].vpc_sg_id}"]
+    }
+  }
+  egress_rules = {
+    allow_all_from_anywhere = {
+      description      = "Allow All"
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
     }
   }
   vpc_sg_tags = merge(
@@ -109,6 +120,15 @@ module "aws_ecs_cluster" {
       Name = "prod-ecs-fargate-cluster"
     }
   )
+}
+
+module "aws_efs" {
+  source       = "./modules/aws_efs"
+  for_each     = var.efs
+  name         = each.value.efs_name
+  vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
+  subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
+  whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
 }
 
 module "aws_ecs_task_definition" {
@@ -163,8 +183,20 @@ module "aws_ecs_task_definition" {
           "value" : "var.admin_passwd"
         }
       ]
+      mountPoints = [
+        {
+          "readOnly": null,
+          "containerPath": "/var/www/html/",
+          "sourceVolume": "${each.value.ecs_task_definition_volume_name}"
+        }
+      ]
     }
   ])
+  ecs_task_definition_volume_name = each.value.ecs_task_definition_volume_name
+  file_system_id = module.aws_efs[each.value.efs_name].efs_id
+  transit_encryption = each.value.transit_encryption
+  root_directory = each.value.root_directory
+  iam_auth = each.value.iam_auth
   ecs_task_definition_tags = merge(
     local.common_tags,
     {
@@ -210,7 +242,7 @@ module "aws_alb_target_group" {
 module "aws_alb_listener" {
   source            = "./modules/aws_alb_listener"
   for_each          = var.ecs_alb_listener
-  load_balancer_id  = module.aws_lb[each.value.alb_name].lb_id
+  load_balancer_arn = module.aws_lb[each.value.alb_name].lb_arn
   port              = each.value.port
   protocol          = each.value.protocol
   target_group_arn  = module.aws_alb_target_group[each.value.alb_target_group_name].lb_target_group_arn
@@ -228,7 +260,7 @@ module "aws_ecs_service" {
   for_each               = var.ecs_service
   ecs_fargate_cluster_id = module.aws_ecs_cluster[each.value.ecs_cluster_name].prod_ecs_fargate_cluster_id
   task_definition_arn    = module.aws_ecs_task_definition[each.value.ecs_task_definition_name].prod_ecs_task_definition_arn
-  security_groups        = ["${module.aws_security_group[each.value.ecs_security_group].vpc_sg_id}"]
+  security_groups        = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
   subnets                = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   target_group_arn       = module.aws_alb_target_group[each.value.target_group_name].lb_target_group_arn
 
@@ -242,4 +274,3 @@ module "aws_ecs_service" {
   container_name                     = each.value.container_name
   container_port                     = each.value.container_port
 }
-

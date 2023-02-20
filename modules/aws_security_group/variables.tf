@@ -19,22 +19,9 @@ variable "vpc_sg_tags" {
 }
 
 variable "ingress_rules" {
-  # type = map(object({
-  #   description = string
-  #   from_port   = number
-  #   to_port     = number
-  #   protocol    = string
-  #   cidr_blocks = list(string)
-  # }))
-  description = "Security Group description"
-  # default = {
-  #   ingress = {
-  #     description      = "Allow HTTP"
-  #     from_port        = 80
-  #     to_port          = 80
-  #     protocol         = "tcp"
-  #     cidr_blocks      = ["0.0.0.0/0"]
-  #     ipv6_cidr_blocks = ["::/0"]
-  #   }
-  # }
+  description = "Security Group ingress rules description"
+}
+
+variable "egress_rules" {
+  description = "Security Group egress rules description"
 }

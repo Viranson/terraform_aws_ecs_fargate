@@ -15,12 +15,17 @@ resource "aws_security_group" "prod_vpc_sg" {
     }
   }
 
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+  dynamic "egress" {
+    for_each = var.egress_rules
+    content {
+      description      = lookup(egress.value, "description", null)
+      from_port        = lookup(egress.value, "from_port", null)
+      to_port          = lookup(egress.value, "to_port", null)
+      protocol         = lookup(egress.value, "protocol", null)
+      cidr_blocks      = lookup(egress.value, "cidr_blocks", null)
+      ipv6_cidr_blocks = lookup(egress.value, "ipv6_cidr_blocks", null)
+    }
   }
+
   tags = var.vpc_sg_tags
 }

@@ -7,6 +7,17 @@ resource "aws_ecs_task_definition" "prod_ecs_task_definition" {
   cpu                      = var.ecs_task_definition_cpu
   container_definitions    = var.ecs_task_definition_container_definitions
   tags                     = var.ecs_task_definition_tags
+  volume {
+    name = var.ecs_task_definition_volume_name
+    efs_volume_configuration {
+      file_system_id          = var.efs_id
+      transit_encryption      = var.transit_encryption
+      root_directory          = var.root_directory #"/"
+      authorization_config {
+        iam             = var.iam_auth #"DISABLED"
+      }
+    }
+  }
 }
 
 resource "aws_iam_role" "prod_ecs_task_execution_role" {

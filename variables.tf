@@ -1,7 +1,7 @@
 ##Local Values
 locals {
   aws_region     = "us-east-1"
-  aws_account_id = "XXXXXXX"
+  aws_account_id = "012345678901"
   prefix         = "prod-eshop-ecs"
   common_tags = {
     Project      = local.prefix

@@ -12,6 +12,7 @@ resource "aws_alb_target_group" "prod_alb_target_group" {
       interval            = lookup(health_check.value, "interval", null)
       protocol            = lookup(health_check.value, "protocol", null)
       matcher             = lookup(health_check.value, "matcher", null)
+      path                = lookup(health_check.value, "path", null)
       timeout             = lookup(health_check.value, "timeout", null)
       unhealthy_threshold = lookup(health_check.value, "unhealthy_threshold", null)
     }
