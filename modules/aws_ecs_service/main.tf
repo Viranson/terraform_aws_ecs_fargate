@@ -18,4 +18,5 @@ resource "aws_ecs_service" "prod_ecs_service" {
     container_name   = var.container_name
     container_port   = var.container_port
   }
+  tags = var.prod_ecs_service_tags
 }

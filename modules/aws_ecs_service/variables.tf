@@ -79,3 +79,8 @@ variable "container_port" {
   type        = number
   description = "Port on the container to associate with the load balancer"
 }
+
+variable "prod_ecs_service_tags" {
+  type        = string
+  description = "Resource Tags"
+}

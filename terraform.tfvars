@@ -245,6 +245,12 @@ efs = {
   }
 }
 
+ecs_service_cloudwatch_log_group = {
+  prod-ecs-svc-cloudwatch-log-group = {
+    cw_log_group_name = "prod-ecs-svc-log-group"
+  }
+}
+
 ecs_task_definition_profile = {
   prod-ecs-task-definition = {
     ecs_task_definition_family                   = "prod_eshop_ecs_task"
@@ -254,6 +260,7 @@ ecs_task_definition_profile = {
     ecs_task_definition_cpu                      = 2048
     ecs_task_definition_volume_name              = "prod_efs"
     efs_name                                     = "prod-nfs-efs-storage"
+    log_group_name                               = "prod-ecs-svc-cloudwatch-log-group"
     transit_encryption                           = "DISABLED"
     root_directory                               = "/prod/"
     iam_auth                                     = "DISABLED"

@@ -132,6 +132,18 @@ module "aws_efs" {
   port         = each.value.port
 }
 
+module "aws_cloudwatch_log_group" {
+  source            = "./modules/aws_cloudwatch_log_group"
+  for_each          = var.ecs_service_cloudwatch_log_group
+  cw_log_group_name = each.value.cw_log_group_name
+  cw_log_group_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-svc-log-group"
+    }
+  )
+}
+
 module "aws_ecs_task_definition" {
   source                                       = "./modules/aws_ecs_task_definition"
   for_each                                     = var.ecs_task_definition_profile
@@ -154,6 +166,14 @@ module "aws_ecs_task_definition" {
           hostPort      = 80
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "${module.aws_cloudwatch_log_group[each.value.log_group_name].prod_cw_log_group_name}"
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "prod-eshop"
+        }
+      }
       environment = [
         {
           "name" : "DB_USER",
@@ -274,6 +294,12 @@ module "aws_ecs_service" {
   assign_public_ip                   = each.value.assign_public_ip
   container_name                     = each.value.container_name
   container_port                     = each.value.container_port
+  prod_ecs_service_tags = merge(
+    local.common_tags,
+    {
+      Name = "prod-ecs-service"
+    }
+  )
 }
 
 module "aws_appautoscaling_target" {
