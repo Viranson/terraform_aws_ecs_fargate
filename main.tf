@@ -170,7 +170,7 @@ module "aws_ecs_task_definition" {
         logDriver = "awslogs"
         options = {
           awslogs-group         = "${module.aws_cloudwatch_log_group[each.value.log_group_name].prod_cw_log_group_name}"
-          awslogs-region        = data.aws_region.current.name
+          awslogs-region        = local.aws_region
           awslogs-stream-prefix = "prod-eshop"
         }
       }

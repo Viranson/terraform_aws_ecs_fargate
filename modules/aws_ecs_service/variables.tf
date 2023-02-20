@@ -81,6 +81,6 @@ variable "container_port" {
 }
 
 variable "prod_ecs_service_tags" {
-  type        = string
+  type        = map(any)
   description = "Resource Tags"
 }
