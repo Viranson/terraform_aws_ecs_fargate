@@ -91,8 +91,8 @@ variable "root_directory" {
 }
 
 variable "iam_auth" {
-  type       = bool
-  descrition = "Whether or not to use the Amazon ECS task IAM role defined in a task definition when mounting the Amazon EFS file system"
+  type        = bool
+  description = "Whether or not to use the Amazon ECS task IAM role defined in a task definition when mounting the Amazon EFS file system"
 }
 
 variable "ecs_task_definition_tags" {
