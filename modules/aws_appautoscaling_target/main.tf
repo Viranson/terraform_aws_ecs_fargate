@@ -8,7 +8,7 @@ resource "aws_appautoscaling_target" "prod_ecs_svc_autoscaling_target" {
   resource_id        = "service/${var.ecs_cluster_name}/${var.ecs_service_name}"
   scalable_dimension = var.app_autoscale_scalable_dimension
   service_namespace  = var.app_autoscale_service_namespace
-  role_arn           = aws_iam_role.ecs_autoscale_role.arn
+  role_arn           = aws_iam_role.prod_ecs_autoscale_role.arn
 }
 
 resource "aws_iam_role" "prod_ecs_autoscale_role" {
@@ -45,5 +45,5 @@ resource "aws_appautoscaling_policy" "ecs_target_cpu" {
     }
     target_value = 80
   }
-  depends_on = [aws_appautoscaling_target.ecs_service_target]
+  depends_on = [aws_appautoscaling_target.prod_ecs_svc_autoscaling_target]
 }
