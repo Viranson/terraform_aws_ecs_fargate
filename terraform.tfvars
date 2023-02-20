@@ -237,7 +237,7 @@ ecs_cluster_profile = {
 
 efs = {
   prod-nfs-efs-storage = {
-    name                    = "prod_ecs_efs_storage"
+    efs_name                    = "prod_ecs_efs_storage"
     vpc_name                = "prod-vpc01"
     subnets                 = ["private-us-east-1a-app", "private-us-east-1b-app"]
     ecs_task_security_group = "prod-ecs-task-vpc-sg"

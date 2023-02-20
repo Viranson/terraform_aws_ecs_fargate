@@ -129,6 +129,7 @@ module "aws_efs" {
   vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
   subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
+  port = each.value.port
 }
 
 module "aws_ecs_task_definition" {
@@ -193,7 +194,7 @@ module "aws_ecs_task_definition" {
     }
   ])
   ecs_task_definition_volume_name = each.value.ecs_task_definition_volume_name
-  file_system_id                  = module.aws_efs[each.value.efs_name].efs_id
+  efs_id                          = module.aws_efs[each.value.efs_name].efs_id
   transit_encryption              = each.value.transit_encryption
   root_directory                  = each.value.root_directory
   iam_auth                        = each.value.iam_auth

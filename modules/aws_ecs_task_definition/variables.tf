@@ -81,7 +81,7 @@ variable "efs_id" {
 }
 
 variable "transit_encryption" {
-  type        = bool
+  type        = string
   description = "Whether or not to enable encryption for Amazon EFS data in transit between the Amazon ECS host and the Amazon EFS server"
 }
 
@@ -91,7 +91,7 @@ variable "root_directory" {
 }
 
 variable "iam_auth" {
-  type        = bool
+  type        = string
   description = "Whether or not to use the Amazon ECS task IAM role defined in a task definition when mounting the Amazon EFS file system"
 }
 

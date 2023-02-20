@@ -76,6 +76,11 @@ variable "ecs_cluster_profile" {
   description = "AWS ECS Cluster resources variables set in map"
 }
 
+variable "efs" {
+  # type        = map(any)
+  description = "AWS EFS resources variables set in map"
+}
+
 variable "ecs_task_definition_profile" {
   # type        = map(any)
   description = "AWS ECS Cluster Task Definition resource variables set in map"
