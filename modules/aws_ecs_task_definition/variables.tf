@@ -35,39 +35,6 @@ variable "ecs_task_definition_cpu" {
 
 variable "ecs_task_definition_container_definitions" {
   description = "A list of valid container definitions provided as a single valid JSON document"
-  # default = jsonencode([
-  #   {
-  #     name      = "${local.image_name}"
-  #     image     = "${local.image_name}:latest"
-  #     cpu       = 1024
-  #     memory    = 2048
-  #     essential = true
-  #     portMappings = [
-  #       {
-  #         containerPort = local.service_port
-  #         hostPort      = local.service_port
-  #       }
-  #     ]
-  #     environment = [
-  #       {
-  #         "name" : "WORDPRESS_DB_USER",
-  #         "value" : var.wp_db_user
-  #       },
-  #       {
-  #         "name" : "WORDPRESS_DB_HOST",
-  #         "value" : var.wp_db_host
-  #       },
-  #       {
-  #         "name" : "WORDPRESS_DB_PASSWORD",
-  #         "value" : var.wp_db_password
-  #       },
-  #       {
-  #         "name" : "WORDPRESS_DB_NAME",
-  #         "value" : var.wp_db_name
-  #       }
-  #     ]
-  #   }
-  # ])
 }
 
 variable "ecs_task_definition_volume_name" {
@@ -98,10 +65,4 @@ variable "iam_auth" {
 variable "ecs_task_definition_tags" {
   type        = map(any)
   description = ""
-  # default = merge(
-  #   local.common_tags,
-  #   {
-  #     Name = local.task_def_name
-  #   }
-  # )
 }

@@ -14,7 +14,7 @@ resource "aws_ecs_task_definition" "prod_ecs_task_definition" {
       transit_encryption = var.transit_encryption
       root_directory     = var.root_directory #"/"
       authorization_config {
-        iam = var.iam_auth #"DISABLED"
+        iam = var.iam_auth
       }
     }
   }

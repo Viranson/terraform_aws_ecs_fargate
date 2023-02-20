@@ -111,5 +111,10 @@ variable "ecs_service" {
   description = "AWS ECS Service resources variables set in map"
 }
 
+variable "ecs_appautoscaling_target" {
+  # type        = map(any)
+  description = "AWS Application AutoScaling ScalableTarget Resource variables set in map"
+}
+
 
 ##---------RESOURCES_VARS----------

@@ -237,7 +237,7 @@ ecs_cluster_profile = {
 
 efs = {
   prod-nfs-efs-storage = {
-    efs_name                    = "prod_ecs_efs_storage"
+    efs_name                = "prod_ecs_efs_storage"
     vpc_name                = "prod-vpc01"
     subnets                 = ["private-us-east-1a-app", "private-us-east-1b-app"]
     ecs_task_security_group = "prod-ecs-task-vpc-sg"
@@ -267,7 +267,7 @@ ecs_alb_profile = {
     load_balancer_name         = "prod-eshop-ecs-alb"
     internal                   = false
     load_balancer_type         = "application"
-    enable_deletion_protection = true
+    enable_deletion_protection = false
   }
 }
 
@@ -313,7 +313,7 @@ ecs_service = {
     target_group_name        = "prod-ecs-alb-target-group"
 
     ecs_service_name                   = "prod_eshop_ecs_service"
-    desired_count                      = 4
+    desired_count                      = 2
     deployment_minimum_healthy_percent = 75
     deployment_maximum_percent         = 200
     launch_type                        = "FARGATE"
@@ -321,5 +321,16 @@ ecs_service = {
     assign_public_ip                   = false
     container_name                     = "eshop"
     container_port                     = 80
+  }
+}
+
+ecs_appautoscaling_target = {
+  prod-ecs-appautoscaling-target = {
+    app_autoscale_max_capacity       = 10
+    app_autoscale_min_capacity       = 2
+    ecs_cluster_name                 = "prod-ecs-cluster-01"
+    ecs_service_name                 = "prod-ecs-service"
+    app_autoscale_scalable_dimension = "ecs:service:DesiredCount"
+    app_autoscale_service_namespace  = "ecs"
   }
 }

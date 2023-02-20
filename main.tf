@@ -129,7 +129,7 @@ module "aws_efs" {
   vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
   subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
-  port = each.value.port
+  port         = each.value.port
 }
 
 module "aws_ecs_task_definition" {
@@ -274,4 +274,16 @@ module "aws_ecs_service" {
   assign_public_ip                   = each.value.assign_public_ip
   container_name                     = each.value.container_name
   container_port                     = each.value.container_port
+}
+
+module "aws_appautoscaling_target" {
+  source           = "./modules/aws_appautoscaling_target"
+  for_each         = var.ecs_appautoscaling_target
+  ecs_cluster_name = module.aws_ecs_cluster[each.value.ecs_cluster_name].prod_ecs_fargate_cluster_name
+  ecs_service_name = module.aws_ecs_service[each.value.ecs_service_name].ecs_service_name
+
+  app_autoscale_max_capacity       = each.value.app_autoscale_max_capacity
+  app_autoscale_min_capacity       = each.value.app_autoscale_min_capacity
+  app_autoscale_scalable_dimension = each.value.app_autoscale_scalable_dimension
+  app_autoscale_service_namespace  = each.value.app_autoscale_service_namespace
 }
