@@ -394,7 +394,7 @@ yum install -y mysql
 EOF
     key_name      = "prod-ec2-bastion-host-key-pair"
     subnet_name   = "public-us-east-1a"
-    vpc_sg_name   = "prod_ecs_task_sg"
+    vpc_sg_name   = "prod-bastion-vpc-sg"
     tags = {
       Name = "prod-ec2-bastion-host"
     }
