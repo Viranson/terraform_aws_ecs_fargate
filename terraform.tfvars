@@ -7,7 +7,7 @@ secret_key = ""
 vpc_profile = {
   prod-vpc01 = {
     vpc_ipv4_cidr_block = "10.200.0.0/16"
-    vpc_tags = {
+    tags = {
       Name = "prod-vpc01"
     }
   }
@@ -216,6 +216,9 @@ vpc_sg_profile = {
         ipv6_cidr_blocks = ["::/0"]
       }
     }
+    tags = {
+      Name = "prod-ecs-alb-sg"
+    }
   }
 }
 
@@ -225,6 +228,21 @@ vpc_sg_ecs_task_profile = {
     vpc_name    = "prod-vpc01"
     vpc_sg_name = "prod_ecs_task_sg"
     description = "Allow HTTP From ALB SG"
+    tags = {
+      Name = "prod-ecs-task-sg"
+    }
+  }
+}
+
+vpc_bastion_host_sg_profile = {
+  prod-bastion-vpc-sg = {
+    vpc_name    = "prod-vpc01"
+    subnets     = ["private-us-east-1a-data", "private-us-east-1b-data"]
+    vpc_sg_name = "prod-bastion-host-sg"
+    description = "Control bastion inbound and outbound access"
+    tags = {
+      Name = "prod-bastion-host-sg"
+    }
   }
 }
 
@@ -232,22 +250,31 @@ vpc_sg_ecs_task_profile = {
 ecs_cluster_profile = {
   prod-ecs-cluster-01 = {
     ecs_fargate_cluster_name = "prod_eshop_ecs_fargate_cluster"
+    tags = {
+      Name = "prod-ecs-fargate-cluster"
+    }
   }
 }
 
-efs = {
+efs_profile = {
   prod-nfs-efs-storage = {
     efs_name                = "prod_ecs_efs_storage"
     vpc_name                = "prod-vpc01"
     subnets                 = ["private-us-east-1a-app", "private-us-east-1b-app"]
     ecs_task_security_group = "prod-ecs-task-vpc-sg"
     port                    = 2049
+    tags = {
+      Name = "prod-efs"
+    }
   }
 }
 
-ecs_service_cloudwatch_log_group = {
+ecs_service_cloudwatch_log_group_profile = {
   prod-ecs-svc-cloudwatch-log-group = {
     cw_log_group_name = "prod-ecs-svc-log-group"
+    tags = {
+      Name = "prod-ecs-svc-log-group"
+    }
   }
 }
 
@@ -262,8 +289,11 @@ ecs_task_definition_profile = {
     efs_name                                     = "prod-nfs-efs-storage"
     log_group_name                               = "prod-ecs-svc-cloudwatch-log-group"
     transit_encryption                           = "DISABLED"
-    root_directory                               = "/prod/"
+    root_directory                               = "/eshop/prod/"
     iam_auth                                     = "DISABLED"
+    tags = {
+      Name = "prod-ecs-task-definition"
+    }
   }
 }
 
@@ -275,10 +305,13 @@ ecs_alb_profile = {
     internal                   = false
     load_balancer_type         = "application"
     enable_deletion_protection = false
+    tags = {
+      Name = "prod-ecs-alb"
+    }
   }
 }
 
-ecs_alb_target_group = {
+ecs_alb_target_group_profile = {
   prod-ecs-alb-target-group = {
     vpc_name = "prod-vpc01"
 
@@ -297,10 +330,13 @@ ecs_alb_target_group = {
         unhealthy_threshold = "2"
       }
     }
+    tags = {
+      Name = "prod-ecs-alb-target-group"
+    }
   }
 }
 
-ecs_alb_listener = {
+ecs_alb_listener_profile = {
   prod-ecs-alb-listener = {
     alb_name              = "prod-ecs-alb"
     alb_target_group_name = "prod-ecs-alb-target-group"
@@ -308,10 +344,13 @@ ecs_alb_listener = {
     port     = 80
     protocol = "HTTP"
     type     = "forward"
+    tags = {
+      Name = "prod-ecs-alb-listener"
+    }
   }
 }
 
-ecs_service = {
+ecs_service_profile = {
   prod-ecs-service = {
     ecs_cluster_name         = "prod-ecs-cluster-01"
     ecs_task_definition_name = "prod-ecs-task-definition"
@@ -328,10 +367,13 @@ ecs_service = {
     assign_public_ip                   = false
     container_name                     = "eshop"
     container_port                     = 80
+    tags = {
+      Name = "prod-ecs-service"
+    }
   }
 }
 
-ecs_appautoscaling_target = {
+ecs_appautoscaling_target_profile = {
   prod-ecs-appautoscaling-target = {
     app_autoscale_max_capacity       = 10
     app_autoscale_min_capacity       = 2
@@ -339,5 +381,22 @@ ecs_appautoscaling_target = {
     ecs_service_name                 = "prod-ecs-service"
     app_autoscale_scalable_dimension = "ecs:service:DesiredCount"
     app_autoscale_service_namespace  = "ecs"
+  }
+}
+
+ec2_instance_profile = {
+  prod-ec2-bastion-host = {
+    instance_type = "t2.micro"
+    user_data     = <<EOF
+#!/bin/bash
+sudo yum update -y
+yum install -y mysql
+EOF
+    key_name      = "prod-ec2-bastion-host-key-pair"
+    subnet_name   = "public-us-east-1a"
+    vpc_sg_name   = "prod_ecs_task_sg"
+    tags = {
+      Name = "prod-ec2-bastion-host"
+    }
   }
 }

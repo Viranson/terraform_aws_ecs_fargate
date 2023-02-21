@@ -2,13 +2,15 @@
 locals {
   aws_region     = "us-east-1"
   aws_account_id = "012345678901"
-  prefix         = "prod-eshop-ecs"
+  prefix         = "prod-eshop"
   common_tags = {
-    Project      = local.prefix
-    ManagedBy    = "Terraform"
-    MaintainedBy = "Viranson HOUNNOUVI viransonland@gmail.com"
+    Env           = "prod"
+    Project       = local.prefix
+    ManagedBy     = "Terraform"
+    ProvisionedBy = "Terraform"
+    Owner         = "viransonland@gmail.com"
   }
-  # vpc_cidr = var.vpc_cidr
+
 }
 
 #Variables values defined in terraform.tfvars file
@@ -76,12 +78,12 @@ variable "ecs_cluster_profile" {
   description = "AWS ECS Cluster resources variables"
 }
 
-variable "efs" {
+variable "efs_profile" {
   # type        = map(any)
   description = "AWS EFS resources variables"
 }
 
-variable "ecs_service_cloudwatch_log_group" {
+variable "ecs_service_cloudwatch_log_group_profile" {
   # type        = map(any)
   description = "AWS CloudWatch Log Group Resource variables for ECS Service"
 }
@@ -96,29 +98,39 @@ variable "vpc_sg_ecs_task_profile" {
   description = "AWS ECS TASK VPC Security Group resources variables"
 }
 
+variable "vpc_bastion_host_sg_profile" {
+  # type        = map(any)
+  description = "AWS EC2 Bastion Host Security Group resources variables"
+}
+
 variable "ecs_alb_profile" {
   # type        = map(any)
   description = "AWS ECS ALB resources variables"
 }
 
-variable "ecs_alb_target_group" {
+variable "ecs_alb_target_group_profile" {
   # type        = map(any)
   description = "AWS ECS ALB Target Group resources variables"
 }
 
-variable "ecs_alb_listener" {
+variable "ecs_alb_listener_profile" {
   # type        = map(any)
   description = "AWS ECS ALB Listener resources variables"
 }
 
-variable "ecs_service" {
+variable "ecs_service_profile" {
   # type        = map(any)
   description = "AWS ECS Service resources variables"
 }
 
-variable "ecs_appautoscaling_target" {
+variable "ecs_appautoscaling_target_profile" {
   # type        = map(any)
   description = "AWS Application AutoScaling ScalableTarget Resource variables"
+}
+
+variable "ec2_instance_profile" {
+  # type        = map(any)
+  description = "AWS EC2 Instance Resource variables"
 }
 
 

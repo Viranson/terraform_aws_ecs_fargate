@@ -2,7 +2,9 @@ module "aws_vpc" {
   source              = "./modules/aws_vpc"
   for_each            = var.vpc_profile
   vpc_ipv4_cidr_block = each.value.vpc_ipv4_cidr_block
-  vpc_tags            = each.value.vpc_tags
+  vpc_tags = merge(
+    local.common_tags, each.value.tags
+  )
 }
 
 module "aws_subnet" {
@@ -62,10 +64,7 @@ module "aws_security_group" {
   ingress_rules = each.value.ingress_rules
   egress_rules  = each.value.egress_rules
   vpc_sg_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-alb-sg"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
@@ -103,10 +102,53 @@ module "aws_security_group_ecs_task" {
     }
   }
   vpc_sg_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-task-sg"
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_security_group_bastion" {
+  source      = "./modules/aws_security_group"
+  for_each    = var.vpc_bastion_host_sg_profile
+  vpc_id      = module.aws_vpc[each.value.vpc_name].vpc_id
+  vpc_sg_name = each.value.vpc_sg_name
+  description = each.value.description
+  ingress_rules = {
+    allow_ssh_from_anywhere = {
+      description      = "Allow SSH From Anywhere"
+      from_port        = 22
+      to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
     }
+  }
+  egress_rules = {
+    allow_https_to_anywhere = {
+      description      = "Allow HTTPS to Anywhere"
+      from_port        = 443
+      to_port          = 443
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    allow_http_to_anywhere = {
+      description      = "Allow HTTP to Anywhere"
+      from_port        = 80
+      to_port          = 80
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    allow_mysql_to_data_private_subnets = {
+      description = "Allow MySQL to Database Private Subnet"
+      from_port   = 3306
+      to_port     = 3306
+      protocol    = "tcp"
+      cidr_blocks = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_cidr_block}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"]
+    }
+  }
+  vpc_sg_tags = merge(
+    local.common_tags, each.value.tags
   )
 }
 
@@ -115,32 +157,29 @@ module "aws_ecs_cluster" {
   for_each                 = var.ecs_cluster_profile
   ecs_fargate_cluster_name = each.value.ecs_fargate_cluster_name
   ecs_fargate_cluster_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-fargate-cluster"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
 module "aws_efs" {
   source       = "./modules/aws_efs"
-  for_each     = var.efs
+  for_each     = var.efs_profile
   name         = each.value.efs_name
   vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
   subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
   port         = each.value.port
+  tags = merge(
+    local.common_tags, each.value.tags
+  )
 }
 
 module "aws_cloudwatch_log_group" {
   source            = "./modules/aws_cloudwatch_log_group"
-  for_each          = var.ecs_service_cloudwatch_log_group
+  for_each          = var.ecs_service_cloudwatch_log_group_profile
   cw_log_group_name = each.value.cw_log_group_name
   cw_log_group_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-svc-log-group"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
@@ -219,10 +258,7 @@ module "aws_ecs_task_definition" {
   root_directory                  = each.value.root_directory
   iam_auth                        = each.value.iam_auth
   ecs_task_definition_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-task-definition"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
@@ -236,16 +272,13 @@ module "aws_lb" {
   subnets                    = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   enable_deletion_protection = each.value.enable_deletion_protection
   lb_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-alb"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
 module "aws_alb_target_group" {
   source                = "./modules/aws_alb_target_group"
-  for_each              = var.ecs_alb_target_group
+  for_each              = var.ecs_alb_target_group_profile
   alb_target_group_name = each.value.alb_target_group_name
   port                  = each.value.port
   protocol              = each.value.protocol
@@ -253,32 +286,26 @@ module "aws_alb_target_group" {
   target_type           = each.value.target_type
   health_check_points   = each.value.health_check_points
   alb_taget_group_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-alb-target-group"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
 module "aws_alb_listener" {
   source            = "./modules/aws_alb_listener"
-  for_each          = var.ecs_alb_listener
+  for_each          = var.ecs_alb_listener_profile
   load_balancer_arn = module.aws_lb[each.value.alb_name].lb_arn
   port              = each.value.port
   protocol          = each.value.protocol
   target_group_arn  = module.aws_alb_target_group[each.value.alb_target_group_name].lb_target_group_arn
   type              = each.value.type
   alb_listener_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-alb-listener"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
 module "aws_ecs_service" {
   source                 = "./modules/aws_ecs_service"
-  for_each               = var.ecs_service
+  for_each               = var.ecs_service_profile
   ecs_fargate_cluster_id = module.aws_ecs_cluster[each.value.ecs_cluster_name].prod_ecs_fargate_cluster_id
   task_definition_arn    = module.aws_ecs_task_definition[each.value.ecs_task_definition_name].prod_ecs_task_definition_arn
   security_groups        = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
@@ -295,16 +322,13 @@ module "aws_ecs_service" {
   container_name                     = each.value.container_name
   container_port                     = each.value.container_port
   prod_ecs_service_tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ecs-service"
-    }
+    local.common_tags, each.value.tags
   )
 }
 
 module "aws_appautoscaling_target" {
   source           = "./modules/aws_appautoscaling_target"
-  for_each         = var.ecs_appautoscaling_target
+  for_each         = var.ecs_appautoscaling_target_profile
   ecs_cluster_name = module.aws_ecs_cluster[each.value.ecs_cluster_name].prod_ecs_fargate_cluster_name
   ecs_service_name = module.aws_ecs_service[each.value.ecs_service_name].ecs_service_name
 
@@ -313,3 +337,32 @@ module "aws_appautoscaling_target" {
   app_autoscale_scalable_dimension = each.value.app_autoscale_scalable_dimension
   app_autoscale_service_namespace  = each.value.app_autoscale_service_namespace
 }
+
+module "aws_iam_bastion_host_profile" {
+  source = "./modules/aws_iam_instance_bastion_profile"
+}
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-5.10-hvm-2.0.*-x86_64-gp2"]
+  }
+  owners = ["amazon"]
+}
+
+module "aws_instance" {
+  source                    = "./modules/aws_instance"
+  for_each                  = var.ec2_instance_profile
+  ec2_ami                   = data.aws_ami.amazon_linux.id
+  user_data                 = each.value.user_data
+  iam_instance_profile_name = module.aws_iam_bastion_host_profile.bastion_iam_instance_profile_name
+  key_name                  = each.value.key_name
+  subnet_id                 = module.aws_subnet[each.value.subnet_name].aws_subnet_id
+  vpc_security_group_ids    = ["${module.aws_security_group_bastion[each.value.vpc_sg_name].vpc_sg_id}"]
+  prod_ec2_instance_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
