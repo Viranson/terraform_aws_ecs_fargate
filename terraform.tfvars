@@ -246,6 +246,18 @@ vpc_bastion_host_sg_profile = {
   }
 }
 
+vpc_rds_instance_sg_profile = {
+  prod-rds-instance-sg = {
+    vpc_name        = "prod-vpc01"
+    security_groups = ["prod-bastion-vpc-sg", "prod-ecs-task-vpc-sg"]
+    vpc_sg_name     = "prod-rds-instance-sg"
+    description     = "Allow access to the RDS database instance"
+    tags = {
+      Name = "prod-rds-sg"
+    }
+  }
+}
+
 
 ecs_cluster_profile = {
   prod-ecs-cluster-01 = {
@@ -287,6 +299,7 @@ ecs_task_definition_profile = {
     ecs_task_definition_cpu                      = 2048
     ecs_task_definition_volume_name              = "prod_efs"
     efs_name                                     = "prod-nfs-efs-storage"
+    db_instance_name                             = "prod-ecs-db-instance"
     log_group_name                               = "prod-ecs-svc-cloudwatch-log-group"
     transit_encryption                           = "DISABLED"
     root_directory                               = "/eshop/prod/"
@@ -398,5 +411,35 @@ EOF
     tags = {
       Name = "prod-ec2-bastion-host"
     }
+  }
+}
+
+db_subnet_group_profile = {
+  prod-ecs-db-subnet-group = {
+    db_subnet_group_name = "prod-ecs-db-subnet-group"
+    subnets              = ["private-us-east-1a-data", "private-us-east-1b-data"]
+    tags = {
+      Name = "prod-ecs-db-subnet-group"
+    }
+  }
+}
+
+db_instance_profile = {
+  prod-ecs-db-instance = {
+    db_subnet_group_name       = "prod-ecs-db-subnet-group"
+    security_groups            = ["prod-rds-instance-sg"]
+    db_instance_identifier     = "prod-eshop-db-instance"
+    db_name                    = "prod-eshop-db"
+    allocated_storage          = 20
+    db_storage_type            = "gp2"
+    db_engine                  = "mysql"
+    db_engine_version          = "5.7"
+    db_instance_class          = "db.t4g.medium"
+    db_password                = "P4ssw0rd"
+    db_username                = "eshopdb-user"
+    db_backup_retention_period = 15
+    db_multi_az                = true
+    db_skip_final_snapshot     = false
+    tags                       = "prod-db-instance"
   }
 }

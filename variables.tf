@@ -133,5 +133,15 @@ variable "ec2_instance_profile" {
   description = "AWS EC2 Instance Resource variables"
 }
 
+variable "db_subnet_group_profile" {
+  # type        = map(any)
+  description = "AWS RDS Subnet Group Resource variables"
+}
+
+variable "db_instance_profile" {
+  # type        = map(any)
+  description = "AWS RDS Instance Resource variables"
+}
+
 
 ##---------RESOURCES_VARS----------

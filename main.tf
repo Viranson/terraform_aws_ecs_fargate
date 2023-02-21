@@ -144,7 +144,34 @@ module "aws_security_group_bastion" {
       from_port   = 3306
       to_port     = 3306
       protocol    = "tcp"
-      cidr_blocks = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_cidr_block}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"]
+      cidr_blocks = [
+        "${module.aws_subnet[each.value.subnets[0]].aws_subnet_cidr_block}",
+        "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"
+      ]
+    }
+  }
+  vpc_sg_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_security_group_rds" {
+  source      = "./modules/aws_security_group"
+  for_each    = var.vpc_rds_instance_sg_profile
+  vpc_id      = module.aws_vpc[each.value.vpc_name].vpc_id
+  vpc_sg_name = each.value.vpc_sg_name
+  description = each.value.description
+  ingress_rules = {
+    allow_mysql = {
+      description = "Allow MySQL connexion From ECS services and Bastion Host"
+      protocol    = "tcp"
+      from_port   = 3306
+      to_port     = 3306
+
+      security_groups = [
+        "${module.aws_security_group_bastion[each.value.security_groups[0]].vpc_sg_id}",
+        "${module.aws_security_group_ecs_task[each.value.security_groups[1]].vpc_sg_id}"
+      ]
     }
   }
   vpc_sg_tags = merge(
@@ -220,7 +247,7 @@ module "aws_ecs_task_definition" {
         },
         {
           "name" : "DB_SERVER",
-          "value" : "var.db_host"
+          "value" : "${module.aws_db_instance[each.value.db_instance_name].prod_db_host}"
         },
         {
           "name" : "DB_PASSWD",
@@ -367,3 +394,40 @@ module "aws_instance" {
   )
 }
 
+module "aws_db_subnet_group" {
+  source               = "./modules/aws_db_subnet_group"
+  for_each             = var.db_subnet_group_profile
+  db_subnet_group_name = each.value.db_subnet_group_name
+  subnet_ids = [
+    "${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}",
+    "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"
+  ]
+  prod_db_subnet_group_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_db_instance" {
+  source   = "./modules/aws_db_instance"
+  for_each = var.db_instance_profile
+
+  db_name                    = each.value.db_name
+  allocated_storage          = 20
+  db_storage_type            = each.value.db_storage_type
+  db_engine                  = each.value.db_engine
+  db_engine_version          = each.value.db_engine_version
+  db_instance_class          = each.value.db_instance_class
+  db_subnet_group_name       = module.aws_db_subnet_group[each.value.prod-ecs-db-subnet-group].prod_db_subnet_group_name
+  db_password                = each.value.db_password
+  db_username                = each.value.db_username
+  db_backup_retention_period = each.value.db_backup_retention_period
+  db_multi_az                = each.value.db_multi_az
+  db_skip_final_snapshot     = each.value.db_skip_final_snapshot
+  db_vpc_security_group_ids = [
+    "${module.aws_security_group_rds[security_groups[0]].vpc_sg_id}"
+  ]
+
+  tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
