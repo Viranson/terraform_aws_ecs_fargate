@@ -20,12 +20,9 @@ resource "aws_iam_role" "bastion" {
 }
 EOF
 
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "prod-ec2-bastion_role"
-    }
-  )
+  tags = {
+    Name = "prod-ec2-bastion_role"
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "bastion_attach_policy" {

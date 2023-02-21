@@ -169,9 +169,9 @@ module "aws_efs" {
   subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
   whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
   port         = each.value.port
-  tags = merge(
-    local.common_tags, each.value.tags
-  )
+  # tags = merge(
+  #   local.common_tags, each.value.tags
+  # )
 }
 
 module "aws_cloudwatch_log_group" {
@@ -357,10 +357,11 @@ module "aws_instance" {
   for_each                  = var.ec2_instance_profile
   ec2_ami                   = data.aws_ami.amazon_linux.id
   user_data                 = each.value.user_data
+  instance_type             = each.value.instance_type
   iam_instance_profile_name = module.aws_iam_bastion_host_profile.bastion_iam_instance_profile_name
   key_name                  = each.value.key_name
   subnet_id                 = module.aws_subnet[each.value.subnet_name].aws_subnet_id
-  vpc_security_group_ids    = ["${module.aws_security_group_bastion[each.value.vpc_sg_name].vpc_sg_id}"]
+  security_group_ids        = ["${module.aws_security_group_bastion[each.value.vpc_sg_name].vpc_sg_id}"]
   prod_ec2_instance_tags = merge(
     local.common_tags, each.value.tags
   )

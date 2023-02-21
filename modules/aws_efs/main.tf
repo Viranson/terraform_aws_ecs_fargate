@@ -80,7 +80,7 @@ resource "aws_efs_access_point" "permissions" {
 
   file_system_id = aws_efs_file_system.efs_storage.id
   root_directory {
-    path = "/"
+    path = "/eshop/"
     creation_info {
       owner_gid   = var.owner_gid
       owner_uid   = var.owner_uid
