@@ -174,6 +174,16 @@ module "aws_security_group_rds" {
       ]
     }
   }
+  egress_rules = {
+    allow_all_from_anywhere = {
+      description      = "Allow All"
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+  }
   vpc_sg_tags = merge(
     local.common_tags, each.value.tags
   )
@@ -410,24 +420,24 @@ module "aws_db_subnet_group" {
 module "aws_db_instance" {
   source   = "./modules/aws_db_instance"
   for_each = var.db_instance_profile
-
+  db_instance_identifier = each.value.db_instance_identifier
   db_name                    = each.value.db_name
   allocated_storage          = 20
   db_storage_type            = each.value.db_storage_type
   db_engine                  = each.value.db_engine
   db_engine_version          = each.value.db_engine_version
   db_instance_class          = each.value.db_instance_class
-  db_subnet_group_name       = module.aws_db_subnet_group[each.value.prod-ecs-db-subnet-group].prod_db_subnet_group_name
+  db_subnet_group_name       = module.aws_db_subnet_group[each.value.db_subnet_group_name].prod_db_subnet_group_name
   db_password                = each.value.db_password
   db_username                = each.value.db_username
   db_backup_retention_period = each.value.db_backup_retention_period
   db_multi_az                = each.value.db_multi_az
   db_skip_final_snapshot     = each.value.db_skip_final_snapshot
   db_vpc_security_group_ids = [
-    "${module.aws_security_group_rds[security_groups[0]].vpc_sg_id}"
+    "${module.aws_security_group_rds[each.value.security_groups[0]].vpc_sg_id}"
   ]
 
-  tags = merge(
+  prod_db_instance_tags = merge(
     local.common_tags, each.value.tags
   )
 }

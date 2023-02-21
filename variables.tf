@@ -73,6 +73,11 @@ variable "vpc_sg_profile" {
   description = "AWS VPC Security Group resources variables"
 }
 
+variable "vpc_rds_instance_sg_profile" {
+  # type        = map(any)
+  description = "AWS RDS VPC Security Group resources variables"
+}
+
 variable "ecs_cluster_profile" {
   # type        = map(any)
   description = "AWS ECS Cluster resources variables"

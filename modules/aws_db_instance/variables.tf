@@ -1,8 +1,3 @@
-variable "prod_db_instance_tags" {
-  type        = map(any)
-  description = "Tags to assign to the resource"
-}
-
 variable "db_instance_identifier" {
   type        = string
   description = "The name of the RDS instance"

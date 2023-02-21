@@ -440,6 +440,8 @@ db_instance_profile = {
     db_backup_retention_period = 15
     db_multi_az                = true
     db_skip_final_snapshot     = false
-    tags                       = "prod-db-instance"
+    tags                       = {
+      Name = "prod-db-instance"
+    }
   }
 }
