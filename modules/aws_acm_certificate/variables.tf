@@ -4,7 +4,7 @@ variable "domain_name" {
 }
 
 variable "subject_alternative_names" {
-  type        = list
+  type        = list(any)
   description = "subdomains that should be SANs in the issued certificate"
 }
 

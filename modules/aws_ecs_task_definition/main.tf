@@ -18,7 +18,7 @@ resource "aws_ecs_task_definition" "prod_ecs_task_definition" {
         content {
           file_system_id     = efs_volume_configuration.value.efs_file_system_id
           transit_encryption = efs_volume_configuration.value.transit_encryption
-          root_directory     = efs_volume_configuration.root_directory
+          root_directory     = efs_volume_configuration.value.root_directory
 
           dynamic "authorization_config" {
             for_each = efs_volume_configuration.value.authorization_config
