@@ -108,13 +108,6 @@ variable "efs_access_point_profile" {
   description = "AWS EFS Access Point resources variables"
 }
 
-
-
-
-
-
-
-
 variable "ecs_service_cloudwatch_log_group_profile" {
   # type        = map(any)
   description = "AWS CloudWatch Log Group Resource variables for ECS Service"
@@ -178,6 +171,11 @@ variable "db_instance_profile" {
 variable "acm_certificate_profile" {
   # type        = map(any)
   description = "AWS ACS Certificate Resource variables"
+}
+
+variable "cloudfront_distribution_profile" {
+  # type        = map(any)
+  description = "AWS Coudfront Resource variables"
 }
 
 

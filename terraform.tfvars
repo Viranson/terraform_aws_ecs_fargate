@@ -580,3 +580,20 @@ acm_certificate_profile = {
     }
   }
 }
+
+cloudfront_distribution_profile = {
+  prod-cloudfront-distribution = {
+    alb_name      = "prod-ecs-alb"
+    acm_cert_name = "prod-acm-certificate"
+
+    enabled                  = true
+    domain_name_aliases      = ["eshop.com"]
+    restriction_type         = "none"
+    locations                = []
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2018"
+    tags = {
+      Name = "prod-ecs-cf-dist"
+    }
+  }
+}

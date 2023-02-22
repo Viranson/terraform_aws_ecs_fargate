@@ -717,3 +717,54 @@ module "aws_acm_certificate" {
     local.common_tags, each.value.tags
   )
 }
+
+module "aws_cloudfront_distribution" {
+  source   = "./modules/aws_cloudfront_distribution"
+  for_each = var.cloudfront_distribution_profile
+
+  enabled                  = each.value.enabled
+  domain_name_aliases      = each.value.domain_name_aliases
+  restriction_type         = each.value.restriction_type
+  locations                = each.value.locations
+  ssl_support_method       = each.value.ssl_support_method
+  minimum_protocol_version = each.value.minimum_protocol_version
+
+  origin = [
+    {
+      domain_name = "${module.aws_lb[each.value.alb_name].lb_dns_name}"
+      origin_id   = "${module.aws_lb[each.value.alb_name].lb_dns_name}"
+      custom_origin_config = [
+        {
+          http_port              = 80
+          https_port             = 443
+          origin_protocol_policy = "http-only"
+          origin_ssl_protocols   = ["TLSv1.2"]
+        }
+      ]
+    }
+  ]
+
+  default_cache_behavior = [
+    {
+      allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+      cached_methods         = ["GET", "HEAD", "OPTIONS"]
+      target_origin_id       = "${module.aws_lb[each.value.alb_name].lb_dns_name}"
+      viewer_protocol_policy = "redirect-to-https"
+      forwarded_values = [
+        {
+          headers      = []
+          query_string = true
+          cookies = [
+            {
+              forward = "all"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+
+  prod_cf_dist_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
