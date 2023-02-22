@@ -88,10 +88,10 @@ variable "ecs_cluster_profile" {
   description = "AWS ECS Cluster resources variables"
 }
 
-variable "efs_profile" {
-  # type        = map(any)
-  description = "AWS EFS resources variables"
-}
+# variable "efs_profile" {
+#   # type        = map(any)
+#   description = "AWS EFS resources variables"
+# }
 
 variable "efs_file_system_profile" {
   # type        = map(any)

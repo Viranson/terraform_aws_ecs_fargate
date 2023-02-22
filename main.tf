@@ -280,7 +280,7 @@ module "aws_efs_file_system" {
   for_each         = var.efs_file_system_profile
   efs_storage_name = each.value.efs_storage_name
   performance_mode = each.value.performance_mode
-  throughput_mode  = each.throughput_mode
+  throughput_mode  = each.value.throughput_mode
   encrypted        = each.value.encrypted
   prod_efs_storage_tags = merge(
     local.common_tags, each.value.tags
@@ -292,7 +292,7 @@ module "aws_efs_mount_target" {
   for_each       = var.efs_mount_target_profile
   file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
   subnet_id      = module.aws_subnet[each.value.subnet_name].aws_subnet_id
-  vpc_sg_ids     = ["${module.aws_security_group[each.value.security_groups[0]].vpc_sg_id}"]
+  vpc_sg_ids     = ["${module.aws_security_group_efs[each.value.security_groups[0]].vpc_sg_id}"]
 }
 
 module "aws_efs_access_point" {
@@ -428,7 +428,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/img/"
           authorization_config = [
             {
@@ -444,7 +444,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/modules/"
           authorization_config = [
             {
@@ -460,7 +460,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/themes/"
           authorization_config = [
             {
@@ -476,7 +476,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/var/"
           authorization_config = [
             {
@@ -492,7 +492,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/config/"
           authorization_config = [
             {
@@ -508,7 +508,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/override/"
           authorization_config = [
             {
@@ -524,7 +524,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/download/"
           authorization_config = [
             {
@@ -540,7 +540,7 @@ module "aws_ecs_task_definition" {
       efs_volume_configuration = [
         {
           efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
-          transit_encryption = "ENABLED"
+          transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/upload/"
           authorization_config = [
             {

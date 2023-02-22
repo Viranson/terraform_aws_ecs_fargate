@@ -28,3 +28,8 @@ variable "owner_uid" {
   type        = number
   default     = 0
 }
+
+variable "efs_access_point_tags" {
+  type        = map(any)
+  description = "Tags to assign to the Resource"
+}

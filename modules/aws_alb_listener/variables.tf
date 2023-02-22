@@ -14,6 +14,11 @@ variable "protocol" {
   # default     = "HTTP"
 }
 
+variable "certificate_arn" {
+  type        = string
+  description = "ARN of the default SSL server certificate"
+}
+
 variable "target_group_arn" {
   type        = string
   description = "ARN of the Target Group to which to route traffic"

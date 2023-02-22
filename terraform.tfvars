@@ -323,7 +323,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-img"
     }
   }
@@ -333,7 +333,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-modules"
     }
   }
@@ -343,7 +343,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-var"
     }
   }
@@ -353,7 +353,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-themes"
     }
   }
@@ -363,7 +363,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-config"
     }
   }
@@ -373,7 +373,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-override"
     }
   }
@@ -383,7 +383,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-download"
     }
   }
@@ -393,7 +393,7 @@ efs_access_point_profile = {
     owner_gid             = 1000
     owner_uid             = 1000
     root_path_permissions = 755
-    tag = {
+    tags = {
       Name = "prod-ecs-efs-access-point-upload"
     }
   }
