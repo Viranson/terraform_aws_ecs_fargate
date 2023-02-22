@@ -78,6 +78,11 @@ variable "vpc_rds_instance_sg_profile" {
   description = "AWS RDS VPC Security Group resources variables"
 }
 
+variable "vpc_efs_sg_profile" {
+  # type        = map(any)
+  description = "AWS EFS VPC Security Group resources variables"
+}
+
 variable "ecs_cluster_profile" {
   # type        = map(any)
   description = "AWS ECS Cluster resources variables"
@@ -87,6 +92,28 @@ variable "efs_profile" {
   # type        = map(any)
   description = "AWS EFS resources variables"
 }
+
+variable "efs_file_system_profile" {
+  # type        = map(any)
+  description = "AWS EFS File System resources variables"
+}
+
+variable "efs_mount_target_profile" {
+  # type        = map(any)
+  description = "AWS EFS Mount Target resources variables"
+}
+
+variable "efs_access_point_profile" {
+  # type        = map(any)
+  description = "AWS EFS Access Point resources variables"
+}
+
+
+
+
+
+
+
 
 variable "ecs_service_cloudwatch_log_group_profile" {
   # type        = map(any)
@@ -146,6 +173,11 @@ variable "db_subnet_group_profile" {
 variable "db_instance_profile" {
   # type        = map(any)
   description = "AWS RDS Instance Resource variables"
+}
+
+variable "acm_certificate_profile" {
+  # type        = map(any)
+  description = "AWS ACS Certificate Resource variables"
 }
 
 

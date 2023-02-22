@@ -237,7 +237,7 @@ vpc_sg_ecs_task_profile = {
 vpc_bastion_host_sg_profile = {
   prod-bastion-vpc-sg = {
     vpc_name    = "prod-vpc01"
-    subnets     = ["private-us-east-1a-data", "private-us-east-1b-data"]
+    subnets     = ["private-us-east-1a-data", "private-us-east-1b-data", "private-us-east-1a-app", "private-us-east-1b-app"]
     vpc_sg_name = "prod-bastion-host-sg"
     description = "Control bastion inbound and outbound access"
     tags = {
@@ -258,6 +258,19 @@ vpc_rds_instance_sg_profile = {
   }
 }
 
+vpc_efs_sg_profile = {
+  prod-efs-sg = {
+    vpc_name        = "prod-vpc01"
+    vpc_sg_name     = "prod-efs-sg"
+    subnets         = ["private-us-east-1a-app", "private-us-east-1b-app"]
+    security_groups = ["prod-bastion-vpc-sg", "prod-ecs-task-vpc-sg"]
+    description     = "Allow access to the EFS File System"
+    tags = {
+      Name = "prod-efs-sg"
+    }
+  }
+}
+
 
 ecs_cluster_profile = {
   prod-ecs-cluster-01 = {
@@ -268,15 +281,120 @@ ecs_cluster_profile = {
   }
 }
 
-efs_profile = {
-  prod-nfs-efs-storage = {
-    efs_name                = "prod_ecs_efs_storage"
-    vpc_name                = "prod-vpc01"
-    subnets                 = ["private-us-east-1a-app", "private-us-east-1b-app"]
-    ecs_task_security_group = "prod-ecs-task-vpc-sg"
-    port                    = 2049
+# efs_profile = {
+#   prod-nfs-efs-storage = {
+#     efs_name                = "prod_ecs_efs_storage"
+#     vpc_name                = "prod-vpc01"
+#     subnets                 = ["private-us-east-1a-app", "private-us-east-1b-app"]
+#     ecs_task_security_group = "prod-ecs-task-vpc-sg"
+#     port                    = 2049
+#   }
+# }
+
+efs_file_system_profile = {
+  prod-efs-file-system = {
+    efs_storage_name = "prod_ecs_efs_storage"
+    performance_mode = "generalPurpose"
+    throughput_mode  = "bursting"
+    encrypted        = true
     tags = {
-      Name = "prod-efs"
+      Name = "prod-efs-file-system"
+    }
+  }
+}
+
+efs_mount_target_profile = {
+  prod-efs-mount-target-1-app = {
+    efs_name        = "prod-efs-file-system"
+    subnet_name     = "private-us-east-1a-app"
+    security_groups = ["prod-efs-sg"]
+  }
+  prod-efs-mount-target-2-app = {
+    efs_name        = "prod-efs-file-system"
+    subnet_name     = "private-us-east-1b-app"
+    security_groups = ["prod-efs-sg"]
+  }
+}
+
+efs_access_point_profile = {
+  prod-ecs-efs-access-point-img = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/img/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-img"
+    }
+  }
+  prod-ecs-efs-access-point-modules = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/modules/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-modules"
+    }
+  }
+  prod-ecs-efs-access-point-var = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/var/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-var"
+    }
+  }
+  prod-ecs-efs-access-point-themes = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/themes/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-themes"
+    }
+  }
+  prod-ecs-efs-access-point-config = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/config/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-config"
+    }
+  }
+  prod-ecs-efs-access-point-override = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/override/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-override"
+    }
+  }
+  prod-ecs-efs-access-point-download = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/download/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-download"
+    }
+  }
+  prod-ecs-efs-access-point-upload = {
+    efs_name              = "prod-efs-file-system"
+    root_path             = "/eshop/prod/upload/"
+    owner_gid             = 1000
+    owner_uid             = 1000
+    root_path_permissions = 755
+    tag = {
+      Name = "prod-ecs-efs-access-point-upload"
     }
   }
 }
@@ -284,6 +402,7 @@ efs_profile = {
 ecs_service_cloudwatch_log_group_profile = {
   prod-ecs-svc-cloudwatch-log-group = {
     cw_log_group_name = "prod-ecs-svc-log-group"
+    retention_in_days = 30
     tags = {
       Name = "prod-ecs-svc-log-group"
     }
@@ -297,13 +416,13 @@ ecs_task_definition_profile = {
     ecs_task_definition_network_mode             = "awsvpc"
     ecs_task_definition_memory                   = 4096
     ecs_task_definition_cpu                      = 2048
-    ecs_task_definition_volume_name              = "prod_efs"
-    efs_name                                     = "prod-nfs-efs-storage"
-    db_instance_name                             = "prod-ecs-db-instance"
-    log_group_name                               = "prod-ecs-svc-cloudwatch-log-group"
-    transit_encryption                           = "DISABLED"
-    root_directory                               = "/eshop/prod/"
-    iam_auth                                     = "DISABLED"
+    # ecs_task_definition_volume_name              = "prod_efs"
+    efs_name           = "prod-efs-file-system"
+    db_instance_name   = "prod-ecs-db-instance"
+    log_group_name     = "prod-ecs-svc-cloudwatch-log-group"
+    transit_encryption = "DISABLED"
+    root_directory     = "/eshop/prod/"
+    iam_auth           = "DISABLED"
     tags = {
       Name = "prod-ecs-task-definition"
     }
@@ -335,10 +454,10 @@ ecs_alb_target_group_profile = {
     health_check_points = {
       health_check = {
         healthy_threshold   = "3"
-        interval            = "30"
+        interval            = "120"
         protocol            = "HTTP"
         matcher             = "200"
-        path                = "/"
+        path                = "/index.php"
         timeout             = "3"
         unhealthy_threshold = "2"
       }
@@ -353,10 +472,10 @@ ecs_alb_listener_profile = {
   prod-ecs-alb-listener = {
     alb_name              = "prod-ecs-alb"
     alb_target_group_name = "prod-ecs-alb-target-group"
-
-    port     = 80
-    protocol = "HTTP"
-    type     = "forward"
+    acm_cert_name         = "prod-acm-certificate"
+    port                  = 80
+    protocol              = "HTTP"
+    type                  = "forward"
     tags = {
       Name = "prod-ecs-alb-listener"
     }
@@ -440,8 +559,19 @@ db_instance_profile = {
     db_backup_retention_period = 15
     db_multi_az                = true
     db_skip_final_snapshot     = false
-    tags                       = {
+    tags = {
       Name = "prod-db-instance"
+    }
+  }
+}
+
+acm_certificate_profile = {
+  prod-acm-certificate = {
+    domain_name               = "eshop.com"
+    subject_alternative_names = ["*.eshop.com"]
+    validation_method         = "DNS"
+    tags = {
+      Name = "prod-acm-cert"
     }
   }
 }

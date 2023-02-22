@@ -16,5 +16,5 @@ resource "aws_efs_file_system" "prod_efs_storage" {
     }
   }
 
-  tags = var.efs_storage_tags
+  tags = var.prod_efs_storage_tags
 }

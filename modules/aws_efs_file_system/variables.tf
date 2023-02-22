@@ -3,7 +3,7 @@ variable "efs_storage_name" {
   description = "Unique name used as reference when creating the EFS to ensure idempotent file system creation"
 }
 
-variable "efs_storage_tags" {
+variable "prod_efs_storage_tags" {
   type        = map(any)
   description = "Tags to assign to the file system"
 }
@@ -11,7 +11,7 @@ variable "efs_storage_tags" {
 variable "performance_mode" {
   description = "The file system performance mode"
   type        = string
-  default     = "generalPurpose"
+  # default     = "generalPurpose"
 }
 variable "throughput_mode" {
   description = "Throughput mode for the file system"
@@ -28,7 +28,7 @@ variable "provisioned_throughput_in_mibps" {
 variable "encrypted" {
   description = "If true, the disk will be encrypted"
   type        = bool
-  default     = true
+  # default     = true
 }
 
 variable "kms_key_id" {

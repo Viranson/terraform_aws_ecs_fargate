@@ -149,6 +149,16 @@ module "aws_security_group_bastion" {
         "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"
       ]
     }
+    allow_efs_to_app_private_subnets = {
+      description = "Allow MySQL to Database Private Subnet"
+      from_port   = 2049
+      to_port     = 2049
+      protocol    = "tcp"
+      cidr_blocks = [
+        "${module.aws_subnet[each.value.subnets[2]].aws_subnet_cidr_block}",
+        "${module.aws_subnet[each.value.subnets[3]].aws_subnet_cidr_block}"
+      ]
+    }
   }
   vpc_sg_tags = merge(
     local.common_tags, each.value.tags
@@ -175,13 +185,70 @@ module "aws_security_group_rds" {
     }
   }
   egress_rules = {
-    allow_all_from_anywhere = {
+    allow_all_to_anywhere = {
       description      = "Allow All"
       from_port        = 0
       to_port          = 0
       protocol         = "-1"
       cidr_blocks      = ["0.0.0.0/0"]
       ipv6_cidr_blocks = ["::/0"]
+    }
+  }
+  vpc_sg_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_security_group_efs" {
+  source      = "./modules/aws_security_group"
+  for_each    = var.vpc_efs_sg_profile
+  vpc_id      = module.aws_vpc[each.value.vpc_name].vpc_id
+  vpc_sg_name = each.value.vpc_sg_name
+  description = each.value.description
+  ingress_rules = {
+    allow_efs = {
+      description = "Allow EFS connexion From ECS services subnets"
+      protocol    = "tcp"
+      from_port   = 2049
+      to_port     = 2049
+
+      cidr_blocks = [
+        "${module.aws_subnet[each.value.subnets[0]].aws_subnet_cidr_block}",
+        "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"
+      ]
+    }
+    allow_efs = {
+      description = "Allow EFS connexion From ECS services and Bastion Host SG"
+      protocol    = "tcp"
+      from_port   = 2049
+      to_port     = 2049
+
+      security_groups = [
+        "${module.aws_security_group_bastion[each.value.security_groups[0]].vpc_sg_id}",
+        "${module.aws_security_group_ecs_task[each.value.security_groups[1]].vpc_sg_id}"
+      ]
+    }
+  }
+  egress_rules = {
+    allow_all = {
+      description = "Allow All to ECS services subnets"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = [
+        "${module.aws_subnet[each.value.subnets[0]].aws_subnet_cidr_block}",
+        "${module.aws_subnet[each.value.subnets[1]].aws_subnet_cidr_block}"
+      ]
+    }
+    allow_all_to_anywhere = {
+      description = "Allow All to ECS services and Bastion Host SG"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      security_groups = [
+        "${module.aws_security_group_bastion[each.value.security_groups[0]].vpc_sg_id}",
+        "${module.aws_security_group_ecs_task[each.value.security_groups[1]].vpc_sg_id}"
+      ]
     }
   }
   vpc_sg_tags = merge(
@@ -198,23 +265,54 @@ module "aws_ecs_cluster" {
   )
 }
 
-module "aws_efs" {
-  source       = "./modules/aws_efs"
-  for_each     = var.efs_profile
-  name         = each.value.efs_name
-  vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
-  subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
-  whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
-  port         = each.value.port
-  # tags = merge(
-  #   local.common_tags, each.value.tags
-  # )
+# module "aws_efs" {
+#   source       = "./modules/aws_efs"
+#   for_each     = var.efs_profile
+#   name         = each.value.efs_name
+#   vpc_id       = module.aws_vpc[each.value.vpc_name].vpc_id
+#   subnet_ids   = ["${module.aws_subnet[each.value.subnets[0]].aws_subnet_id}", "${module.aws_subnet[each.value.subnets[1]].aws_subnet_id}"]
+#   whitelist_sg = ["${module.aws_security_group_ecs_task[each.value.ecs_task_security_group].vpc_sg_id}"]
+#   port         = each.value.port
+# }
+
+module "aws_efs_file_system" {
+  source           = "./modules/aws_efs_file_system"
+  for_each         = var.efs_file_system_profile
+  efs_storage_name = each.value.efs_storage_name
+  performance_mode = each.value.performance_mode
+  throughput_mode  = each.throughput_mode
+  encrypted        = each.value.encrypted
+  prod_efs_storage_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_efs_mount_target" {
+  source         = "./modules/aws_efs_mount_target"
+  for_each       = var.efs_mount_target_profile
+  file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+  subnet_id      = module.aws_subnet[each.value.subnet_name].aws_subnet_id
+  vpc_sg_ids     = ["${module.aws_security_group[each.value.security_groups[0]].vpc_sg_id}"]
+}
+
+module "aws_efs_access_point" {
+  source                = "./modules/aws_efs_access_point"
+  for_each              = var.efs_access_point_profile
+  file_system_id        = module.aws_efs_file_system[each.value.efs_name].efs_id
+  root_path             = each.value.root_path
+  owner_gid             = each.value.owner_gid
+  owner_uid             = each.value.owner_uid
+  root_path_permissions = each.value.root_path_permissions
+  efs_access_point_tags = merge(
+    local.common_tags, each.value.tags
+  )
 }
 
 module "aws_cloudwatch_log_group" {
   source            = "./modules/aws_cloudwatch_log_group"
   for_each          = var.ecs_service_cloudwatch_log_group_profile
   cw_log_group_name = each.value.cw_log_group_name
+  retention_in_days = each.value.retention_in_days
   cw_log_group_tags = merge(
     local.common_tags, each.value.tags
   )
@@ -290,7 +388,7 @@ module "aws_ecs_task_definition" {
     }
   ])
   ecs_task_definition_volume_name = each.value.ecs_task_definition_volume_name
-  efs_id                          = module.aws_efs[each.value.efs_name].efs_id
+  efs_id                          = module.aws_efs_file_system[each.value.efs_name].efs_id
   transit_encryption              = each.value.transit_encryption
   root_directory                  = each.value.root_directory
   iam_auth                        = each.value.iam_auth
@@ -335,6 +433,7 @@ module "aws_alb_listener" {
   protocol          = each.value.protocol
   target_group_arn  = module.aws_alb_target_group[each.value.alb_target_group_name].lb_target_group_arn
   type              = each.value.type
+  certificate_arn   = module.aws_acm_certificate[each.value.acm_cert_name].prod_cert_arn
   alb_listener_tags = merge(
     local.common_tags, each.value.tags
   )
@@ -418,9 +517,9 @@ module "aws_db_subnet_group" {
 }
 
 module "aws_db_instance" {
-  source   = "./modules/aws_db_instance"
-  for_each = var.db_instance_profile
-  db_instance_identifier = each.value.db_instance_identifier
+  source                     = "./modules/aws_db_instance"
+  for_each                   = var.db_instance_profile
+  db_instance_identifier     = each.value.db_instance_identifier
   db_name                    = each.value.db_name
   allocated_storage          = 20
   db_storage_type            = each.value.db_storage_type
@@ -438,6 +537,17 @@ module "aws_db_instance" {
   ]
 
   prod_db_instance_tags = merge(
+    local.common_tags, each.value.tags
+  )
+}
+
+module "aws_acm_certificate" {
+  source                    = "./modules/aws_acm_certificate"
+  for_each                  = var.acm_certificate_profile
+  domain_name               = each.value.domain_name
+  subject_alternative_names = each.value.subject_alternative_names
+  validation_method         = each.value.validation_method
+  prod_cert_tags = merge(
     local.common_tags, each.value.tags
   )
 }
