@@ -1,4 +1,4 @@
-resource "aws_efs_access_point" "permissions" {
+resource "aws_efs_access_point" "prod_efs_acess_point" {
   #   count = var.create_efs_ap ? 1 : 0
 
   file_system_id = var.file_system_id
