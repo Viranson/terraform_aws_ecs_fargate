@@ -5,3 +5,7 @@ output "lb_id" {
 output "lb_arn" {
   value = aws_lb.prod_alb.arn
 }
+
+output "lb_dns_name" {
+  value = aws_lb.prod_alb.dns_name
+}

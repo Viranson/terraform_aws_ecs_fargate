@@ -427,12 +427,12 @@ module "aws_ecs_task_definition" {
       source_volume = "ImgEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/img/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_img].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_img].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -443,12 +443,12 @@ module "aws_ecs_task_definition" {
       source_volume = "ModulesEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/modules/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_modules].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_modules].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -459,12 +459,12 @@ module "aws_ecs_task_definition" {
       source_volume = "ThemesEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/themes/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_themes].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_themes].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -475,12 +475,12 @@ module "aws_ecs_task_definition" {
       source_volume = "VarEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/var/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_var].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_var].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -491,12 +491,12 @@ module "aws_ecs_task_definition" {
       source_volume = "ConfigEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/config/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_config].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_config].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -507,12 +507,12 @@ module "aws_ecs_task_definition" {
       source_volume = "OverrideEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/override/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_override].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_override].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -523,12 +523,12 @@ module "aws_ecs_task_definition" {
       source_volume = "DownloadEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/download/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_download].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_download].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
@@ -539,12 +539,12 @@ module "aws_ecs_task_definition" {
       source_volume = "UploadEFS"
       efs_volume_configuration = [
         {
-          efs_file_system_id = module.aws_efs_file_system[each.value.efs_name].efs_id
+          efs_file_system_id = "${module.aws_efs_file_system[each.value.efs_name].efs_id}"
           transit_encryption = "DISABLE"
           root_directory     = "/eshop/prod/upload/"
           authorization_config = [
             {
-              access_point_id = module.aws_efs_access_point[each.value.access_point_upload].prod_efs_access_point_id
+              access_point_id = "${module.aws_efs_access_point[each.value.access_point_upload].prod_efs_access_point_id}"
               iam             = "ENABLED"
             }
           ]
