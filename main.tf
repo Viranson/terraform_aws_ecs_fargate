@@ -728,6 +728,7 @@ module "aws_cloudfront_distribution" {
   locations                = each.value.locations
   ssl_support_method       = each.value.ssl_support_method
   minimum_protocol_version = each.value.minimum_protocol_version
+  acm_certificate_arn = module.aws_acm_certificate[each.value.acm_cert_name].prod_cert_arn
 
   origin = [
     {

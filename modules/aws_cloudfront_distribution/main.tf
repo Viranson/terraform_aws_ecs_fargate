@@ -34,7 +34,7 @@ resource "aws_cloudfront_distribution" "prod_cf_dist" {
           dynamic "cookies" {
             for_each = forwarded_values.value.cookies
             content {
-              forward = cookies.values.forward
+              forward = cookies.value.forward
             }
           }
         }
